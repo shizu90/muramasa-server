@@ -11,7 +11,13 @@ export default async function createUser(req, res){
             res.status(422).json({status: 'error', error: 'User already exists'})
             return undefined
         }else{
-            const user = UserModel.create({username, email, password: await bcrypt.hash(password, 10), animeList, mangaList, favorites})        
+            const user = UserModel.create({
+                username, 
+                email, 
+                password: await bcrypt.hash(password, 10), 
+                animeList: JSON.parse(animeList), 
+                mangaList: JSON.parse(mangaList), 
+                favorites: JSON.parse(favorites)})        
             return user
         }
     }catch(e){
