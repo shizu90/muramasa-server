@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import UserModel from './model/User.js'
 import jwt from 'jsonwebtoken'
 import { manageAnimeList, manageMangaList } from './services/list.service.js'
+import sessionValidation from './services/session.service.js'
 
 export default function appRoutes(app){
     app.get('/api/health', (req, res) => {
@@ -65,26 +66,8 @@ export default function appRoutes(app){
 
     app.post('/api/user/login', async (req, res) => {
         const {email, password} = req.body
-
-        if(!email){
-            return res.status(422).json({status: 'error', error: 'Invalid email'})
-        }
-        if(!password){
-            return res.status(422).json({status: 'error', error: 'Invalid password'})
-        }
-
         const user = await UserModel.findOne({email: email})
-
-        if(!user){
-            return res.status(404).json({status: 'error', error: 'User not found'})
-        }
-
-        const checkPassword = await bcrypt.compare(password, user.password)
-
-        if(!checkPassword){
-            return res.status(422).json({status: 'error', error: 'Invalid password'})
-        }
-
+        sessionValidation(email, password, res, user)
         try{
             const secret = process.env.SECRET
             const token = jwt.sign({
