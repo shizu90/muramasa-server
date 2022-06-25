@@ -2,6 +2,7 @@ import bodyParser from 'body-parser'
 import express from 'express'
 import mongoose from 'mongoose'
 import appRoutes from './routes.js'
+import logger from './utils/logger.js'
 import 'dotenv/config.js'
 
 const app = express()
@@ -18,10 +19,10 @@ mongoose.connect(`${dbUri}`, {
     useNewUrlParser: true, 
     useUnifiedTopology: true
 }).then(() => {
-    console.log('Connected to Mongodb')
+    logger.info('Connected to Mongodb')
     app.listen(port, () => {
-        console.log(`Running server at port http://localhost:${port}`)
+        logger.info(`Running server at port http://localhost:${port}`)
     })
 }).catch((e) => {
-    console.log(`Failed to connect do database: ${e.name}`)
+    logger.info(`Failed to connect do database: ${e.name}`)
 })
