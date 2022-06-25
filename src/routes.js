@@ -2,6 +2,7 @@ import createUser from './controller/user.controller.js'
 import bcrypt from 'bcrypt'
 import UserModel from './model/User.js'
 import jwt from 'jsonwebtoken'
+import { manageAnimeList, manageMangaList } from './services/list.service.js'
 
 export default function appRoutes(app){
     app.get('/api/health', (req, res) => {
@@ -46,88 +47,20 @@ export default function appRoutes(app){
         }
     })
 
-    app.put('/api/user/:id/animelist/:anime/:status', async (req, res) => {
+    //Add or remove media to list
+
+    app.put('/api/user/:id/animelist/:method', async (req, res) => {
         const id = req.params.id
-        const anime = req.params.anime
-        const status = req.params.status
-        if(anime.id){
-            if(status === 'watching'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'animeList.watching': anime}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.animeList})
-            }
-            else if(status === 'completed'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'animeList.completed': anime}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.animeList}) 
-            }
-            else if(status === 'dropped'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'animeList.dropped': anime}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.animeList})
-            }
-            else if(status === 'plans'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'animeList.plans': anime}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.animeList})    
-            }else{
-                res.status(404).json({status: 'error', error: 'Status not found'})
-            }
-        }else{
-            res.status(400).json({status: 'error', error: 'Invalid param type'})
-        }
+        const method = req.params.method
+        const {anime, status} = req.body
+        manageAnimeList(method, JSON.parse(anime), status, id, res)
     })
 
-    app.put('/api/user/:id/mangalist/:manga/:status', async (req, res) => {
+    app.put('/api/user/:id/mangalist/:method', async (req, res) => {
         const id = req.params.id
-        const manga = req.params.manga
-        const status = req.params.status
-        if(manga.id){
-            if(status === 'reading'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'mangaList.reading': manga}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.mangaList})
-            }
-            else if(status === 'completed'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'mangaList.completed': manga}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.mangaList}) 
-            }
-            else if(status === 'dropped'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'mangaList.dropped': manga}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.mangaList})
-            }
-            else if(status === 'plans'){
-                const user = await UserModel.findOneAndUpdate({_id: id}, {$addToSet: {'mangaList.plans': manga}})
-                if(!user){
-                    return res.status(404).json({status: 'error', error: 'User not found'})
-                }
-                res.status(200).json({status: 'success', success: user.mangaList})    
-            }else{
-                res.status(404).json({status: 'error', error: 'Status not found'})
-            }
-        }else{
-            res.status(400).json({status: 'error', error: 'Invalid param type'})
-        }
-    })
-
-    app.put('/api/user/:id/animelist/:anime/:status/delete', async (req, res) => {
-        
+        const method = req.params.method
+        const {manga, status} = req.body
+        manageMangaList(method, JSON.parse(manga), status, id, res)
     })
 
     app.post('/api/user/login', async (req, res) => {
