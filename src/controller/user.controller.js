@@ -4,7 +4,7 @@ import userValidation from "../services/user.service.js"
 
 export default async function createUser(req, res){
     try {
-        const {username, email, password, passwordConfirm, animeList, mangaList, favorites} = req.body
+        const {username, email, password, passwordConfirm} = req.body
         const userExists = await UserModel.findOne({email: email})
         userValidation(username, email, password, passwordConfirm, res)
         if(userExists){
@@ -14,10 +14,8 @@ export default async function createUser(req, res){
             const user = UserModel.create({
                 username, 
                 email, 
-                password: await bcrypt.hash(password, 10), 
-                animeList: JSON.parse(animeList), 
-                mangaList: JSON.parse(mangaList), 
-                favorites: JSON.parse(favorites)})        
+                password: await bcrypt.hash(password, 10) 
+            })      
             return user
         }
     }catch(e){
