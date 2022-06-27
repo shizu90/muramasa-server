@@ -1,141 +1,108 @@
 import UserModel from '../model/User.js'
 
 export async function manageAnimeList(method, anime, status, UID, response){
+    const user = await UserModel.findById(UID, '-password')
+    if(!user){
+        return response.status(404).json({status: 'error', error: 'User not found'})
+    }
+    const properties = []
+    UserModel.schema.eachPath((path) => {
+        if(path.slice(0, 9) === 'animeList'){
+            properties.push(path)   
+        } 
+    })
     if(anime.id){
-        if(method === 'push'){
-            if(status === 'watching'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'animeList.watching': anime}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
+        properties.forEach((property) => {
+            if(status === property.slice(10)){
+                if(method === 'add'){
+                    const index = `{'${property}': ${anime}}`
+                    console.log(JSON.parse(JSON.stringify(index)))
+                    user.updateOne({$addToSet: JSON.parse(JSON.stringify(index))})
+                    return response.status(200).json({status: 'success', success: user.animeList})    
+                }else if(method === 'delete'){
+                    const index = `{'${property}': ${anime}}`
+                    user.updateOne({$pull: JSON.parse(JSON.stringify(index))})
+                    return response.status(200).json({status: 'success', success: user.animeList})  
+                }else if(method === 'update'){
+                    if(user.animeList[`${property.slice(10)}`].length > 0){        
+                        for(let i = 0;i<user.animeList[`${property.slice(10)}`].length; i++){
+                            if(anime.id === user.animeList[`${property.slice(10)}`][i].id){
+                                const index = `{'${property}': ${user.animeList[`${property.slice(10)}`][i]}}`
+                                user.updateOne({$pull: JSON.parse(JSON.stringify(index))})
+                                return response.status(200).json({status: 'success', success: user.animeList})
+                            }else{
+                                const index = `{'${property}': ${anime}}`
+                                user.updateOne({$addToSet: JSON.parse(JSON.stringify(index))})
+                                properties.forEach((property) => {
+                                    for(let j = 0;j<user.animeList[`${property.slice(10)}`].length;j++){
+                                        if(anime.id === user.animeList[`${property.slice(10)}`][j].id){
+                                            const index = `{'${property}': ${user.animeList[`${property.slice(10)}`][j]}}`
+                                            user.updateOne({$pull: JSON.parse(JSO.stringify(index))})
+                                        }
+                                    }
+                                })
+                                return response.status(200).json({status: 'success', success: user.animeList})
+                            }
+                        }
+                    }
                 }
-                response.status(200).json({status: 'success', success: user.animeList})
-            }
-            else if(status === 'completed'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'animeList.completed': anime}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList}) 
-            }
-            else if(status === 'dropped'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'animeList.dropped': anime}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList})
-            }
-            else if(status === 'plans'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'animeList.plans': anime}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList})    
             }else{
-                response.status(404).json({status: 'error', error: 'Status not found'})
+                return response.status(404).json({status: 'error', error: 'Status not found'})
             }
-        }else{
-            if(status === 'watching'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'animeList.watching': {id: anime.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList})
-            }
-            else if(status === 'completed'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'animeList.completed': {id: anime.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList}) 
-            }
-            else if(status === 'dropped'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'animeList.dropped': {id: anime.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList})
-            }
-            else if(status === 'plans'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'animeList.plans': {id: anime.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.animeList})    
-            }else{
-                response.status(404).json({status: 'error', error: 'Status not found'})
-            }
-        }
+        })   
     }else{
-        response.status(404).json({status: 'error', error: 'Status not found'})
+        response.status(404).json({status: 'error', error: 'Invalid anime type'})
     }
 }
 
 export async function manageMangaList(method, manga, status, UID, response){
+    const user = await UserModel.findById({_id: UID}, '-password')
+    if(!user){
+        return response.status(404).json({status: 'error', error: 'User not found'})
+    }
+    const properties = []
+    UserModel.schema.eachPath((path) => {
+        if(path.slice(0, 9) === 'animeList'){
+            properties.push(path)    
+        } 
+    })
     if(manga.id){
-        if(method === 'push'){
-            if(status === 'reading'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'mangaList.reading': manga}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
+        for(const property in properties){
+            if(status === property.slice(10)){
+                if(method === 'add'){
+                    const index = `{'${property}': ${manga}}`
+                    await user.updateOne({$addToSet: JSON.parse(JSON.stringify(index))})
+                    return response.status(200).json({status: 'success', success: user.mangaList})    
+                }else if(method === 'delete'){
+                    const index = `{'${property}': ${manga}}`
+                    await user.updateOne({$pull: JSON.parse(JSON.stringify(index))})
+                    return response.status(200).json({status: 'success', success: user.mangaList})  
+                }else if(method === 'update'){
+                    if(user.mangaList[`${property.slice(10)}`].length > 0){        
+                        for(let i = 0;i<user.mangaList[`${property.slice(10)}`].length; i++){
+                            if(manga.id === user.mangaList[`${property.slice(10)}`][i].id){
+                                const index = `{'${property}': ${user.mangaList[`${property.slice(10)}`][i]}}`
+                                await user.updateOne({$pull: JSON.parse(JSON.stringify(index))})
+                            }else{
+                                const index = `{'${property}': ${manga}}`
+                                await user.updateOne({$addToSet: JSON.parse(JSON.stringify(index))})
+                                for(const property in properties){
+                                    for(let j = 0;j<user.mangaList[`${property.slice(10)}`].length;j++){
+                                        if(manga.id === user.mangaList[`${property.slice(10)}`][j].id){
+                                            const index = `{'${property}': ${user.mangaList[`${property.slice(10)}`][j]}}`
+                                            await user.updateOne({$pull: JSON.parse(JSO.stringify(index))})
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                response.status(200).json({status: 'success', success: user.mangaList})
-            }
-            else if(status === 'completed'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'mangaList.completed': manga}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList}) 
-            }
-            else if(status === 'dropped'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'mangaList.dropped': manga}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList})
-            }
-            else if(status === 'plans'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$addToSet: {'mangaList.plans': manga}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList})    
             }else{
-                response.status(404).json({status: 'error', error: 'Status not found'})
-            }
-        }else{
-            if(status === 'reading'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'mangaList.reading': {id: manga.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList})
-            }
-            else if(status === 'completed'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'mangaList.completed': {id: manga.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList}) 
-            }
-            else if(status === 'dropped'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'mangaList.dropped': {id: manga.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList})
-            }
-            else if(status === 'plans'){
-                const user = await UserModel.findOneAndUpdate({_id: UID}, {$pull: {'mangaList.plans': {id: manga.id}}})
-                if(!user){
-                    return response.status(404).json({status: 'error', error: 'User not found'})
-                }
-                response.status(200).json({status: 'success', success: user.mangaList})    
-            }else{
-                response.status(404).json({status: 'error', error: 'Status not found'})
-            }
+                return response.status(404).json({status: 'error', error: 'Status not found'})
+            }   
         }
     }else{
-        response.status(400).json({status: 'error', error: 'Invalid param type'})
+        response.status(404).json({status: 'error', error: 'Invalid anime type'})
     }
 }
