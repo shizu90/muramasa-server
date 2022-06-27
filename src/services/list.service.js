@@ -10,51 +10,43 @@ export async function manageAnimeList(method, anime, status, UID, response){
         if(path.slice(0, 9) === 'animeList'){
             properties.push(path)   
         } 
-    })
+    }) 
     if(anime.id){
-        properties.forEach((property) => {
-            if(status === property.slice(10)){
+        if(status === 'watching' && method === 'add'){
+            user.updateOne({$addToSet: {[`animeList.watching`]: anime}})
+        }
+        for(let i = 0; i<properties.length; i++){
+            if(status === properties[i].slice(10)){
                 if(method === 'add'){
-                    const index = `{'${property}': ${anime}}`
-                    console.log(JSON.parse(JSON.stringify(index)))
-                    user.updateOne({$addToSet: JSON.parse(JSON.stringify(index))})
-                    return response.status(200).json({status: 'success', success: user.animeList})    
+                    await user.updateOne({$addToSet: {[`${properties[i]}`]: anime}})
+                    return response.status(200).json({status: 'success', sucess: user.animeList})
                 }else if(method === 'delete'){
-                    const index = `{'${property}': ${anime}}`
-                    user.updateOne({$pull: JSON.parse(JSON.stringify(index))})
-                    return response.status(200).json({status: 'success', success: user.animeList})  
+                    await user.updateOne({$pull: {[`${properties[i]}`]: anime}})
+                    return response.status(200).json({status: 'success', success: user.animeList})
                 }else if(method === 'update'){
-                    if(user.animeList[`${property.slice(10)}`].length > 0){        
-                        for(let i = 0;i<user.animeList[`${property.slice(10)}`].length; i++){
-                            if(anime.id === user.animeList[`${property.slice(10)}`][i].id){
-                                const index = `{'${property}': ${user.animeList[`${property.slice(10)}`][i]}}`
-                                user.updateOne({$pull: JSON.parse(JSON.stringify(index))})
-                                return response.status(200).json({status: 'success', success: user.animeList})
-                            }else{
-                                const index = `{'${property}': ${anime}}`
-                                user.updateOne({$addToSet: JSON.parse(JSON.stringify(index))})
-                                properties.forEach((property) => {
-                                    for(let j = 0;j<user.animeList[`${property.slice(10)}`].length;j++){
-                                        if(anime.id === user.animeList[`${property.slice(10)}`][j].id){
-                                            const index = `{'${property}': ${user.animeList[`${property.slice(10)}`][j]}}`
-                                            user.updateOne({$pull: JSON.parse(JSO.stringify(index))})
-                                        }
-                                    }
-                                })
-                                return response.status(200).json({status: 'success', success: user.animeList})
+                    const current = user.animeList[`${properties[i].slice(10)}`]
+                    for(let j=0; j<current.length;j++){
+                        if(anime.id === current[j].id){
+                            await user.updateOne({$pull: {[`${properties[i]}`]: current[j]}})
+                        }
+                    }
+                    for(const stat in properties){
+                        const current = user.animeList[`${properties[stat].slice(10)}`]
+                        for(let j=0;j<current.length;j++){
+                            if(anime.id === current[j].id){
+                                await user.updateOne({$pull: {[`${properties[stat]}`]: current[j]}})
                             }
                         }
                     }
+                    await user.updateOne({$addToSet: {[`${properties[i]}`]: anime}})
+                    return response.status(200).json({status: 'success', success: user.animeList})
                 }
-            }else{
-                return response.status(404).json({status: 'error', error: 'Status not found'})
             }
-        })   
+        }  
     }else{
         response.status(404).json({status: 'error', error: 'Invalid anime type'})
     }
 }
-
 export async function manageMangaList(method, manga, status, UID, response){
     const user = await UserModel.findById({_id: UID}, '-password')
     if(!user){
