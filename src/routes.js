@@ -79,7 +79,6 @@ export default function appRoutes(app){
         const id = parseJwt(token)
         const method = req.params.method
         const {anime, status} = req.body
-        console.log(anime)
         manageAnimeList(method, anime, status, id, res)
     })
 
