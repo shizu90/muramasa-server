@@ -79,7 +79,8 @@ export default function appRoutes(app){
         const id = parseJwt(token)
         const method = req.params.method
         const {anime, status} = req.body
-        manageAnimeList(method, JSON.parse(anime), status, id, res)
+        console.log(anime)
+        manageAnimeList(method, anime, status, id, res)
     })
 
     app.put('/api/user/:token/mangalist/:method', async (req, res) => {
@@ -87,7 +88,7 @@ export default function appRoutes(app){
         const id = parseJwt(token)
         const method = req.params.method
         const {manga, status} = req.body
-        manageMangaList(method, JSON.parse(manga), status, id, res)
+        manageMangaList(method, manga, status, id, res)
     })
 
     app.put('/api/user/:token/favorites/:method', async(req, res) => {
