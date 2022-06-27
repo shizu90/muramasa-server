@@ -79,7 +79,7 @@ export default function appRoutes(app){
         const id = parseJwt(token)
         const method = req.params.method
         const {anime, status} = req.body
-        manageAnimeList(method, anime, status, id, res)
+        await manageAnimeList(method, anime, status, id, res)
     })
 
     app.put('/api/user/:token/mangalist/:method', async (req, res) => {
