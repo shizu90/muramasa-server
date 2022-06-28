@@ -115,11 +115,10 @@ export default function appRoutes(app){
         try {
             const user = await createUser(req, res)
             if(user === undefined){
-                res.status(400).json({status: 'error', error: 'User already created'})
                 logger.info(`User already exists`)
             }else{
                 logger.info(`User created successfully: ${user}`)
-                res.status(200).json({body: req.body})
+                res.status(200).json({status: 'success', success: 'User created successfully'})
             }
         }catch(e){
             res.json({status: 'error', message: `${e.message}`})
@@ -172,7 +171,7 @@ export default function appRoutes(app){
                 id: user._id,
             }, secret)
 
-            res.status(200).json({status: 'success', success: 'Succesfully auth fulfillment', token})
+            res.status(200).json({status: 'success', success: `Succesfully logged as ${user.username}`, token})
         }catch(e){
             logger.error(e)
             res.status(500).json({status: 'error', error: 'Occurred an error on the server'})
