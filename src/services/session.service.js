@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 
 export default async function sessionValidation(email, password, response, user){
-    if(!email){
+    if(!email || user.email !== email){
         return response.status(422).json({status: 'error', error: 'Invalid email'})
     }
     if(!password){
