@@ -37,6 +37,60 @@ export default function appRoutes(app){
         res.status(200).json({user: user.animeList})
     })
 
+    app.get('/api/user/:token/animelist/:id', async(req, res) => {
+        const token = req.params.token
+        const id = parseJwt(token)
+        const animeId = req.params.id
+        const user = await UserModel.findById(id, '-password')
+        const data = {}
+        if(!user){
+            return res.status(404).json({status: 'error', error: 'User not found'})
+        }
+        for(let i=0;i<Object.keys(user.animeList).length;i++){
+            const current = user.animeList[`${Object.keys(user.animeList)[i]}`]
+            for(let j=0;j<current.length;j++){
+                if(animeId === current[j].id){
+
+                    data.id = current[j].id
+                    data.favorited = current[j].favorited
+                    data.count = current[j].count
+                    data.progress = current[j].progress
+                }else{
+                    data.id = undefined
+                }
+            }
+        }
+        
+        return res.status(200).json(data)
+    })
+
+    app.get('/api/user/:token/mangalist/:id', async(req, res) => {
+        const token = req.params.token
+        const id = parseJwt(token)
+        const mangaId = req.params.id
+        const user = await UserModel.findById(id, '-password')
+        const data = {}
+        if(!user){
+            return res.status(404).json({status: 'error', error: 'User not found'})
+        }
+        for(let i=0;i<Object.keys(user.mangaList).length;i++){
+            const current = user.mangaList[`${Object.keys(user.mangaList)[i]}`]
+            for(let j=0;j<current.length;j++){
+                if(mangaId === current[j].id){
+
+                    data.id = current[j].id
+                    data.favorited = current[j].favorited
+                    data.count = current[j].count
+                    data.progress = current[j].progress
+                }else{
+                    data.id = undefined
+                }
+            }
+        }
+        
+        return res.status(200).json(data)
+    })
+
     app.get('/api/user/:token/mangalist', async(req, res) => {
         const token = req.params.token
         const id = parseJwt(token)
