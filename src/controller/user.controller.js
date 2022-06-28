@@ -5,10 +5,14 @@ import userValidation from "../services/user.service.js"
 export default async function createUser(req, res){
     try {
         const {username, email, password, passwordConfirm} = req.body
-        const userExists = await UserModel.findOne({email: email})
+        const userExistsByEmail = await UserModel.findOne({email: email})
+        const userExistsByUsername = await UserModel.findOne({username: username})
         userValidation(username, email, password, passwordConfirm, res)
-        if(userExists){
-            res.status(422).json({status: 'error', error: 'User already exists'})
+        if(userExistsByEmail){
+            res.status(422).json({status: 'error', error: 'User already exists, please use another email'})
+            return undefined
+        }else if(userExistsByUsername){
+            res.status(422).json({status: 'error', error: 'User already exists, please use another username'})
             return undefined
         }else{
             const user = UserModel.create({
