@@ -3,8 +3,9 @@ import logger from './utils/logger.js'
 import UserModel from './model/User.js'
 import jwt from 'jsonwebtoken'
 import parseJwt from './utils/parseJWT.js'
-import { manageAnimeList, manageMangaList } from './services/list.service.js'
+import { manageAnimeList, manageMangaList, manageFavorites } from './services/list.service.js'
 import sessionValidation from './services/session.service.js'
+import bcrypt from 'bcrypt'
 
 export default function appRoutes(app){
     app.get('/api/health', (req, res) => {
@@ -148,23 +149,27 @@ export default function appRoutes(app){
         const id = parseJwt(token)
         const method = req.params.method
         const {media} = req.body
-        const user = await UserModel.findById(id, '-password')
-        if(!user){
-            res.status(404).json({status: 'error', error: 'User not found'})
-        }
-        if(method === 'push'){
-            await user.updateOne({$addToSet: {favorites: media}})
-            res.status(200).json({status: 'success', success: user.favorites})
+
+        if(method === 'add'){
+            manageFavorites('add', media, id, res)
+            res.status(200).json({status: 'success', success: 'Added successfuly to favorited'})
         }else{
-            await user.updateOne({$pull: {favorites: media}})
-            res.status(200).json({status: 'success', success: user.favorites})
+            manageFavorites('delete', media, id, res)
+            res.status(200).json({status: 'success', success: 'Deleted successfully from favorites'})
         }
     })
 
     app.post('/api/user/login', async (req, res) => {
         const {email, password} = req.body
+        sessionValidation(email, password, res)
         const user = await UserModel.findOne({email: email})
-        sessionValidation(email, password, res, user)
+        const checkPassword = await bcrypt.compare(password, user.password)
+        if(!checkPassword){
+            return res.status(422).json({status: 'error', error: 'Invalid password'})
+        }
+        if(!user){
+            return res.status(404).json({status: 'error', error: 'User not found'})
+        }
         try{
             const secret = process.env.SECRET
             const token = jwt.sign({
