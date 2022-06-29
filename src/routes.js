@@ -17,10 +17,10 @@ export default function appRoutes(app){
         res.status(200).json({users})
     })
 
-    app.get('/api/user/:token', async (req, res) => {
-        const token = req.params.token
-        const id = parseJwt(token)
-        const user = await UserModel.findById(id, '-password')
+    app.get('/api/user/:param', async (req, res) => {
+        const param = req.params.param
+        const id = param.length > 14 ? parseJwt(token) : undefined
+        const user = param.length > 14 ? await UserModel.findById(id, '-password -_id') : await UserModel.findOne({username: param}, '-password -_id')
         if(!user){
             return res.status(404).json({status: 'error', error: 'User not found'})
         }
