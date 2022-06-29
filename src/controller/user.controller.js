@@ -10,8 +10,8 @@ export default async function createUser(req, res){
             res.status(422).json({status: 'error', error: 'Invalid email format'})
             return undefined
         }
-        if(!username || typeof username !== 'string'){
-            res.status(422).json({status: 'error', error: 'Invalid username'})
+        if(!username || typeof username !== 'string' || username.length > 14){
+            res.status(422).json({status: 'error', error: 'Invalid username or length too big'})
             return undefined
         }
         if(password.length < 6 || typeof password !== 'string' || password !== passwordConfirm){
