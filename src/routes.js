@@ -119,7 +119,7 @@ export default function appRoutes(app){
                 logger.info(`User already exists`)
             }else{
                 logger.info(`User created successfully: ${user}`)
-                res.status(200).json({status: 'success', success: 'User created successfully'})
+                res.status(200).json({status: 'success', success: `User ${user.username} created successfully`})
             }
         }catch(e){
             res.json({status: 'error', message: `${e.message}`})
@@ -163,6 +163,9 @@ export default function appRoutes(app){
         const {email, password} = req.body
         sessionValidation(email, password, res)
         const user = await UserModel.findOne({email: email})
+        if(!user){
+            return res.status(404).json({status: 'error', error: 'User not found'})
+        }
         const checkPassword = await bcrypt.compare(password, user.password)
         if(!checkPassword){
             return res.status(422).json({status: 'error', error: 'Invalid password'})
@@ -176,7 +179,7 @@ export default function appRoutes(app){
                 id: user._id,
             }, secret)
 
-            res.status(200).json({status: 'success', success: `Succesfully logged as ${user.username}`, token})
+            res.status(200).json({status: 'success', success: `Succesfully logged as ${user.username}`, token, username: user.username})
         }catch(e){
             logger.error(e)
             res.status(500).json({status: 'error', error: 'Occurred an error on the server'})
