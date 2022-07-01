@@ -25,7 +25,10 @@ export default async function createUser(req, res){
             res.status(422).json({status: 'error', error: 'Username already taken'})
             return undefined
         }else{
+            const users = await UserModel.find()
+            const UID = (users.length+1).toString()
             const user = UserModel.create({
+                UID,
                 username, 
                 email, 
                 password: await bcrypt.hash(password, 10) 
@@ -33,6 +36,6 @@ export default async function createUser(req, res){
             return user
         }
     }catch(e){
-        console.log(`Failed to create an user: ${e.name}`)
+        console.log(`Failed to create an user: ${e.message}`)
     }
 }
