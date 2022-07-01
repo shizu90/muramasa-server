@@ -1,6 +1,7 @@
 import mongoose from "mongoose"
 
 const UserSchema = new mongoose.Schema({
+    UID: {type: String, unique: true},
     username: {type: String, required: true, unique: true},
     propic: {type: String},
     bio: {type: String},
