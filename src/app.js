@@ -2,14 +2,13 @@ import express from 'express'
 import mongoose from 'mongoose'
 import appRoutes from './routes.js'
 import logger from './utils/logger.js'
-import bodyParser from 'body-parser'
 import cors from 'cors'
 import 'dotenv/config.js'
 
 const app = express()
 
 app.use(cors())
-app.use(bodyParser.urlencoded({extended: true}))
+app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 
 const port = process.env.PORT || 4040
