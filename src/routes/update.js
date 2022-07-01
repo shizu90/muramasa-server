@@ -36,14 +36,14 @@ export default function updateRoutes(app){
         const token = req.params.token
         const {username, bio, propic} = req.body
         const id = parseJwt(token)
-        const user = UserModel.findById(id, '-password')
+        const user = await UserModel.findById(id, '-password')
         if(!user){
             res.status(404).json({status: 'error', error: 'User not found'})
         }
-        if(username.length > 0){
+        if(username.length > 0 || username !== user.username){
             await user.updateOne({username: username})
         }
-        if(bio.length > 0){
+        if(bio.length > 0 || username !== user.bio){
             await user.updateOne({bio: bio})
         }
         if(propic.length > 0){
