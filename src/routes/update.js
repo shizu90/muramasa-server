@@ -31,4 +31,24 @@ export default function updateRoutes(app){
             res.status(200).json({status: 'error', error: 'Already have 5 favorites in list, max length is 5'})
         }
     })
+
+    app.put('/api/user/:token/info', async(req, res) => {
+        const token = req.params.token
+        const {username, bio, propic} = req.body
+        const id = parseJwt(token)
+        const user = UserModel.findById(id, '-password')
+        if(!user){
+            res.status(404).json({status: 'error', error: 'User not found'})
+        }
+        if(username.length > 0){
+            await user.updateOne({username: username})
+        }
+        if(bio.length > 0){
+            await user.updateOne({bio: bio})
+        }
+        if(propic.length > 0){
+            await user.updateOne({propic: propic})
+        }
+        res.status(200).json({status: 'success', success: 'Updated info successfully'})
+    })
 }
