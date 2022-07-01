@@ -34,10 +34,12 @@ export default function readRoutes(app) {
         if(!user){
             res.status(404).json({status: 'error', error: 'That user doesnt exists'})
         }
-        if(user._id.toString() === idByToken){
-            res.status(200).json({status: 'success', success: true})
-        }else{
-            res.status(200).json({status: 'success', success: false})
+        if(user){
+            if(user._id.toString() === idByToken){
+                res.status(200).json({status: 'success', success: true})
+            }else{
+                res.status(200).json({status: 'success', success: false})
+            }
         }
     })
 
