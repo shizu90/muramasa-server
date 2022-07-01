@@ -41,7 +41,7 @@ export default function postRoutes(app){
                 id: user._id,
             }, secret)
 
-            res.status(200).json({status: 'success', success: `Succesfully logged as ${user.username}`, token, username: user.username})
+            res.status(200).json({status: 'success', success: `Succesfully logged as ${user.username}`, token, UID: user.UID})
         }catch(e){
             logger.error(e)
             res.status(500).json({status: 'error', error: 'Occurred an error on the server'})
