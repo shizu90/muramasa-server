@@ -14,23 +14,23 @@ export default function readRoutes(app) {
         res.status(200).json({users})
     })
 
-    //Get user by username or token
+    //Get user by UID or token
     app.get('/api/user/:param', async (req, res) => {
         const param = req.params.param
-        const id = param.length > 14 ? parseJwt(param) : undefined
-        const user = param.length > 14 ? await UserModel.findById(id, '-password -_id') : await UserModel.findOne({username: param}, '-password -_id')
+        const id = param.length > 14 ? parseJwt(param) : param
+        const user = param.length > 14 ? await UserModel.findById(id, '-password -_id') : await UserModel.findOne({UID: id}, '-password -_id')
         if(!user){
             return res.status(404).json({status: 'error', error: 'User not found'})
         }
         res.status(200).json({user})
     })
 
-    //Check if account's id with username passed in params is equal to token
-    app.get('/api/user/:username/:token', async (req, res) => {
-        const username = req.params.username
+    //Check if account's id with UID passed in params is equal to token
+    app.get('/api/user/:UID/:token', async (req, res) => {
+        const UID = req.params.UID
         const token = req.params.token
         const idByToken = parseJwt(token)
-        const user = await UserModel.findOne({username: username}, '-password')
+        const user = await UserModel.findOne({UID: UID}, '-password')
         if(!user){
             res.status(404).json({status: 'error', error: 'That user doesnt exists'})
         }
