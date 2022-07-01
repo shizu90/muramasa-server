@@ -16,7 +16,8 @@ const UserSchema = new mongoose.Schema({
         dropped: [],
         plans: []
     },
-    favorites: []
+    favoritesAnime: Array(5),
+    favoritesManga: Array(5)
 }, { collection: 'users'})
 
 const UserModel = mongoose.model('UserSchema', UserSchema)
